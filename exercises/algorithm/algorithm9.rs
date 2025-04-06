@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,8 +36,13 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
-        
+        self.count += 1;
+        if self.count >= self.items.len() {
+            self.items.push(value);
+        } else {
+            self.items[self.count] = value;
+        }
+        self.up(self.count);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,8 +62,39 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        if right > self.count || (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        } else {
+            right
+        }
+    }
+
+    fn up(&mut self, idx: usize) {
+        let mut current = idx;
+        while current > 1 {
+            let parent = self.parent_idx(current);
+            if (self.comparator)(&self.items[current], &self.items[parent]) {
+                self.items.swap(current, parent);
+                current = parent;
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn down(&mut self, idx: usize) {
+        let mut current = idx;
+        while self.children_present(current) {
+            let child = self.smallest_child_idx(current);
+            if (self.comparator)(&self.items[child], &self.items[current]) {
+                self.items.swap(current, child);
+                current = child;
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -80,13 +115,20 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            None
+        } else {
+            let result = self.items[1].clone();
+            self.items.swap(1, self.count);
+            self.count -= 1;
+            self.down(1);
+            Some(result)
+        }
     }
 }
 
